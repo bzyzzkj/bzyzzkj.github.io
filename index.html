@@ -36,7 +36,7 @@
 									<div class="col">
 										<q-card>
 											<q-card-section>
-												<div class="text-h6">活动抽卡参数配置</div>
+												<div class="text-h6">抽卡产出权重配置</div>
 											</q-card-section>
 											<q-card-section>
 												<div class="row q-px-sm q-gutter-md">
@@ -142,7 +142,8 @@
 									<div class="col">
 										<q-card>
 											<q-card-section>
-												<div class="text-h6">活动抽卡模拟配置</div>
+												<div class="text-h6">抽卡活动参数配置</div>
+												<div class="text-h6">这个活动是一个新手卡池，玩家有初始免费的10次抽卡，后续可以以很低的价格重置免费的十连结果，直至抽出满意的结果。</div>
 											</q-card-section>
 											<q-card-section>
 												<div class="row q-px-sm q-gutter-md">
@@ -184,7 +185,7 @@
 														color="orange"
 														filled
 														v-model="costDrawGold"
-														label="额外进行一次十连需要的钻石数量"
+														label="重置十连的花费"
 														dense
 														class="col-3"
 														lazy-rules
@@ -194,7 +195,7 @@
 														color="orange"
 														filled
 														v-model="safeNum"
-														label="玩家愿意付费买的最大次数"
+														label="玩家愿意付费重置的最大次数"
 														dense
 														class="col-3"
 														lazy-rules
@@ -203,7 +204,7 @@
 												</div>
 											</q-card-section>
 											<q-card-section>
-												<q-toggle label="是否开启十连只出2个SSR限制" v-model="doubleSSR" />
+												<q-toggle label="是否开启十连最多出2个SSR限制" v-model="doubleSSR" />
 												<q-toggle label="是否开启玩家付费模式" v-model="costMode" />
 											</q-card-section>
 											<q-card-actions align="center">
@@ -270,8 +271,8 @@
 
 					const activityMaxSSRCount = ref(2);
 
-					const playerCount = ref(100000); //参与活动人数
-					const playerFreeDrawCount = ref(10); //免费十连次数
+					const playerCount = ref(10000); //参与活动人数
+					const playerFreeDrawCount = ref(1); //免费十连次数
 					const playerMaxSSR = ref([]);
 					const playerCostGold = ref([]);
 
@@ -285,8 +286,8 @@
 					const SRweight = ref(600);
 
 					const safeNum = ref(50); //付费保底次数
-					const doubleSSR = ref(false);
-					const costMode = ref(false);
+					const doubleSSR = ref(true);
+					const costMode = ref(true);
 
 					const averageCost = ref(0);
 					const plagerAverageCost = ref(0);
