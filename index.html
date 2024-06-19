@@ -1,473 +1,406 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<meta charset="UTF-8" />
-		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
-		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-		<title>抽卡模拟器</title>
-		<link
-			href="https://fonts.loli.net/css?family=Roboto:100,300,400,500,700,900|Material+Icons"
-			rel="stylesheet"
-			type="text/css"
-		/>
-		<link href="https://unpkg.com/quasar@2.10.0/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
-		<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
-		<script src="https://unpkg.com/echarts@5.4.0/dist/echarts.min.js"></script>
-	</head>
-	<body class="desktop no-touch">
-		<div id="app">
-			<q-layout view="hHh lpR fFf">
-				<q-header class="bg-primary text-white" height-hint="98">
-					<q-toolbar>
-						<q-toolbar-title> 抽卡模拟器 </q-toolbar-title>
-					</q-toolbar>
-					<q-btn-toggle v-model="tab" :options="drawOptions" toggle-color="white" toggle-text-color="dark" unelevated />
-				</q-header>
 
-				<q-page-container>
-					<q-page>
-						<q-tab-panels v-model="tab" keep-alive>
-							<q-tab-panel name="normal">
-								<q-btn color="purple" @click="showNotif" label="Show with caption" />
-							</q-tab-panel>
+<head>
+	<meta charset="UTF-8" />
+	<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>抽卡模拟器</title>
+	<link href="https://fonts.loli.net/css?family=Roboto:100,300,400,500,700,900|Material+Icons" rel="stylesheet"
+		type="text/css" />
+	<link href="https://unpkg.com/quasar@2.10.0/dist/quasar.prod.css" rel="stylesheet" type="text/css" />
+	<script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+	<script src="https://unpkg.com/echarts@5.4.0/dist/echarts.min.js"></script>
+</head>
 
-							<q-tab-panel name="activity" keep-alive>
-								<div class="row q-gutter-md">
-									<div class="col">
-										<q-card>
-											<q-card-section>
-												<div class="text-h6">抽卡产出权重配置</div>
-											</q-card-section>
-											<q-card-section>
-												<div class="row q-px-sm q-gutter-md">
-													<q-input
-														color="orange"
-														filled
-														v-model="maxDrawCount"
-														label="保底次数"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="initDrawRate"
-														label="初始SSR随机权重"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="maxDrawRate"
-														label="最大SSR随机权重"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="SRweight"
-														label="SR默认权重"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-												</div>
-											</q-card-section>
-											<q-card-section>
-												<q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
-													<div
-														class="row q-px-sm q-gutter-md"
-														v-for="setting,index in SSRDrawSetting"
-														:key="'rate'+ index"
-													>
-														<div class="col-1">
-															<q-btn color="primary" label="删除" @click="deleteSetting(index)" flat size="xs" />
-														</div>
+<body class="desktop no-touch">
+	<div id="app">
+		<q-layout view="hHh lpR fFf">
+			<q-header class="bg-primary text-white" height-hint="98">
+				<q-toolbar>
+					<q-toolbar-title> 抽卡模拟器 </q-toolbar-title>
+				</q-toolbar>
+				<q-btn-toggle v-model="tab" :options="drawOptions" toggle-color="white" toggle-text-color="dark" unelevated />
+			</q-header>
 
-														<q-input
-															color="orange"
-															filled
-															v-model="SSRDrawSetting[index].min"
-															label="次数左边界"
-															dense
-															class="col-3"
-															lazy-rules
-														>
-														</q-input>
-														<q-input
-															color="orange"
-															filled
-															v-model="SSRDrawSetting[index].max"
-															label="次数左边界"
-															dense
-															class="col-3"
-															lazy-rules
-														>
-														</q-input>
-														<q-input
-															color="orange"
-															filled
-															v-model="SSRDrawSetting[index].increment"
-															label="权重增长"
-															dense
-															class="col-3"
-															lazy-rules
-														>
-														</q-input>
+			<q-page-container>
+				<q-page>
+					<q-tab-panels v-model="tab" keep-alive>
+						<q-tab-panel name="normal">
+							<q-btn color="purple" @click="showNotif" label="Show with caption" />
+						</q-tab-panel>
+
+						<q-tab-panel name="activity" keep-alive>
+							<div class="row q-gutter-md">
+								<div class="col">
+									<q-card>
+										<q-card-section>
+											<div class="text-h6">抽卡产出权重配置</div>
+										</q-card-section>
+										<q-card-section>
+											<div class="row q-px-sm q-gutter-md">
+												<q-input color="orange" filled v-model="maxDrawCount" label="保底次数" dense class="col-3"
+													lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="initDrawRate" label="初始SSR随机权重（万分比）" dense class="col-3"
+													lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="maxDrawRate" label="最大SSR随机权重（万分比）" dense class="col-3"
+													lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="SRweight" label="SR默认权重（万分比）" dense class="col-3"
+													lazy-rules>
+												</q-input>
+											</div>
+										</q-card-section>
+										<q-card-section>
+											<q-form @submit="onSubmit" @reset="onReset" class="q-gutter-md">
+												<div class="row q-px-sm q-gutter-md" v-for="setting,index in SSRDrawSetting"
+													:key="'rate'+ index">
+													<div class="col-1">
+														<q-btn color="primary" label="删除" @click="deleteSetting(index)" flat size="xs" />
 													</div>
-													<div class="row q-px-sm q-gutter-md">
-														<div class="col-1">
-															<q-btn color="primary" label="新增" @click="addSetting" flat size="xs" />
-														</div>
+
+													<q-input color="orange" filled v-model="SSRDrawSetting[index].min" label="次数左边界" dense
+														class="col-3" lazy-rules>
+													</q-input>
+													<q-input color="orange" filled v-model="SSRDrawSetting[index].max" label="次数左边界" dense
+														class="col-3" lazy-rules>
+													</q-input>
+													<q-input color="orange" filled v-model="SSRDrawSetting[index].increment" label="权重增长" dense
+														class="col-3" lazy-rules>
+													</q-input>
+												</div>
+												<div class="row q-px-sm q-gutter-md">
+													<div class="col-1">
+														<q-btn color="primary" label="新增" @click="addSetting" flat size="xs" />
 													</div>
-												</q-form>
-											</q-card-section>
-											<q-card-section
-												><div class="text-subtitle2">SSR综合产出概率：{{SSRAverageProb}}</div>
-											</q-card-section>
-											<q-card-section align="center">
-												<div id="rate" style="width: 500px; height: 400px"></div>
-											</q-card-section>
-										</q-card>
-									</div>
-									<div class="col">
-										<q-card>
-											<q-card-section>
-												<div class="text-h6">抽卡活动参数配置</div>
-												<div class="text-h6">这个活动是一个新手卡池，玩家有初始免费的10次抽卡，后续可以以很低的价格重置免费的十连结果，直至抽出满意的结果。</div>
-											</q-card-section>
-											<q-card-section>
-												<div class="row q-px-sm q-gutter-md">
-													<q-input
-														color="orange"
-														filled
-														v-model="playerCount"
-														label="参与活动人数"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="playerFreeDrawCount"
-														label="玩家免费抽取次数"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="freeDrawCount"
-														label="一次免费的抽数"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
 												</div>
-											</q-card-section>
-											<q-card-section>
-												<div class="row q-px-sm q-gutter-md">
-													<q-input
-														color="orange"
-														filled
-														v-model="costDrawGold"
-														label="重置十连的花费"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-													<q-input
-														color="orange"
-														filled
-														v-model="safeNum"
-														label="玩家愿意付费重置的最大次数"
-														dense
-														class="col-3"
-														lazy-rules
-													>
-													</q-input>
-												</div>
-											</q-card-section>
-											<q-card-section>
-												<q-toggle label="是否开启十连最多出2个SSR限制" v-model="doubleSSR" />
-												<q-toggle label="是否开启玩家付费模式" v-model="costMode" />
-											</q-card-section>
-											<q-card-actions align="center">
-												<q-btn color="primary" label="模拟计算" @click="startSimulation" />
-											</q-card-actions>
-											<q-card-section>
-												<div class="row">
-													<div class="col">SSR统计概率：{{statDrawRate.ssr}}</div>
-													<div class="col">SR统计概率：{{statDrawRate.sr}}</div>
-													<div class="col">R统计概率：{{statDrawRate.r}}</div>
-												</div>
-											</q-card-section>
-											<q-card-section>
-												<div class="text-h6 row">活动玩家平均花钻数量：{{averageCost}}</div>
-												<div class="text-h6 row">额外付费玩家平均花钻数量：{{plagerAverageCost}}</div>
-											</q-card-section>
-											<q-card-section align="center">
-												<div id="cost" style="width: 500px; height: 400px"></div>
-											</q-card-section>
-											<q-card-actions align="center">
-												<q-btn color="primary" label="导出数据(慎用会卡死)" @click="jsonToExcel" />
-											</q-card-actions>
-										</q-card>
-									</div>
-									<div class="col">
-										<q-card>
-											<q-card-section>
-												<div class="text-h6">模拟结果详情</div>
-											</q-card-section>
-											<q-card-actions align="center">
-												<q-btn color="primary" label="分析结果" @click="drawpieChart" />
-											</q-card-actions>
-											<q-card-section align="center">
-												<div id="pie" style="width: 500px; height: 400px"></div>
-											</q-card-section>
-											<q-card-section align="center">
-												<div class="text-h6">前10次十连在第几次十连出SSR的分布</div>
-												<div id="append" style="width: 500px; height: 500px"></div>
-											</q-card-section>
-											<q-card-section>
-												<q-table
-													style="height: 600px"
-													:rows="displayResult"
-													:columns="groupColumns"
-													row-key="name"
-													:pagination="{rowsPerPage:0}"
-											/></q-card-section>
-										</q-card>
-									</div>
+											</q-form>
+										</q-card-section>
+										<q-card-section>
+											<div class="text-subtitle2">SSR综合产出概率：{{SSRAverageProb}}</div>
+										</q-card-section>
+										<q-card-section align="center">
+											<div id="rate" style="width: 500px; height: 400px"></div>
+										</q-card-section>
+									</q-card>
 								</div>
-							</q-tab-panel>
-						</q-tab-panels>
-					</q-page>
-				</q-page-container>
-			</q-layout>
-		</div>
+								<div class="col">
+									<q-card>
+										<q-card-section>
+											<div class="text-h6">抽卡活动参数配置</div>
+											<div class="text">这个活动是一个新手卡池，玩家有初始免费的10次抽卡，后续可以以很低的价格获得额外的十连结果，直至抽出满意的十连。</div>
+										</q-card-section>
+										<q-card-section>
+											<div class="row q-px-sm q-gutter-md">
+												<q-input color="orange" filled v-model="playerCount" label="参与活动人数" dense class="col-3"
+													lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="playerFreeDrawCount" label="玩家免费抽取次数" dense
+													class="col-3" lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="freeDrawCount" label="一次免费的抽数" dense class="col-3"
+													lazy-rules>
+												</q-input>
+											</div>
+										</q-card-section>
+										<q-card-section>
+											<div class="row q-px-sm q-gutter-md">
+												<q-input color="orange" filled v-model="costDrawGold" label="额外十连的花费" dense class="col-3"
+													lazy-rules>
+												</q-input>
+												<q-input color="orange" filled v-model="safeNum" label="付费重置的最大次数" dense class="col-3"
+													lazy-rules>
+												</q-input>
+											</div>
+										</q-card-section>
+										<q-card-section>
+											<div class="row"><q-toggle label="是否开启十连最多出2个SSR限制" v-model="doubleSSR" /></div>
+											<div class="row"><q-toggle label="开启玩家付费模式（没抽到ssr的玩家会付费直至抽到ssr）" v-model="costMode" /></div>
+										</q-card-section>
+										<q-card-actions align="center">
+											<q-btn color="primary" label="模拟计算" @click="startSimulation" />
+										</q-card-actions>
+										<q-card-section>
+											<div class="row">
+												<div class="col">SSR统计概率：{{statDrawRate.ssr}}</div>
+												<div class="col">SR统计概率：{{statDrawRate.sr}}</div>
+												<div class="col">R统计概率：{{statDrawRate.r}}</div>
+											</div>
+										</q-card-section>
+										<q-card-section>
+											<div class="text-h6 row">活动玩家平均花钻数量：{{averageCost}}</div>
+											<div class="text-h6 row">额外付费玩家平均花钻数量：{{plagerAverageCost}}</div>
+										</q-card-section>
+										<q-card-section align="center">
+											<div id="cost" style="width: 500px; height: 400px"></div>
+										</q-card-section>
+										<q-card-actions align="center">
+											<q-btn color="primary" label="导出数据(人数太多时慎用，会卡死)" @click="jsonToExcel" />
+										</q-card-actions>
+									</q-card>
+								</div>
+								<div class="col">
+									<q-card>
+										<q-card-section>
+											<div class="text-h6">模拟结果详情</div>
+										</q-card-section>
+										<q-card-actions align="center">
+											<q-btn color="primary" label="分析结果" @click="drawpieChart" />
+										</q-card-actions>
+										<q-card-section align="center">
+											<div id="pie" style="width: 500px; height: 400px"></div>
+										</q-card-section>
+										<q-card-section align="center">
+											<div class="text-h6">前10次十连在第几次十连出SSR的分布</div>
+											<div id="append" style="width: 500px; height: 500px"></div>
+										</q-card-section>
+										<q-card-section>
+											<q-table style="height: 600px" :rows="displayResult" :columns="groupColumns" row-key="name"
+												:pagination="{rowsPerPage:0}" /></q-card-section>
+									</q-card>
+								</div>
+							</div>
+						</q-tab-panel>
+					</q-tab-panels>
+				</q-page>
+			</q-page-container>
+		</q-layout>
+	</div>
 
-		<script src="https://unpkg.com/quasar@2.10.0/dist/quasar.umd.prod.js"></script>
-		<script>
-			Object.assign(window, Vue, Quasar);
-			const vue3Composition = {
-				setup() {
-					const $q = useQuasar();
+	<script src="https://unpkg.com/quasar@2.10.0/dist/quasar.umd.prod.js"></script>
+	<script>
+		Object.assign(window, Vue, Quasar);
+		const vue3Composition = {
+			setup() {
+				const $q = useQuasar();
 
-					const activityMaxSSRCount = ref(2);
+				const activityMaxSSRCount = ref(2);
 
-					const playerCount = ref(10000); //参与活动人数
-					const playerFreeDrawCount = ref(1); //免费十连次数
-					const playerMaxSSR = ref([]);
-					const playerCostGold = ref([]);
+				const playerCount = ref(10000); //参与活动人数
+				const playerFreeDrawCount = ref(1); //免费十连次数
+				const playerMaxSSR = ref([]);
+				const playerCostGold = ref([]);
 
-					const freeDrawCount = ref(10); //一次免费是十连
-					const costDrawGold = ref(300); // 付费额外进行一次十连的花费
-					const tab = ref('activity');
-					const initDrawRate = ref(60);
-					const maxDrawRate = ref(10000);
-					const maxDrawCount = ref(50);
-					const minDrawCount = ref(1);
-					const SRweight = ref(600);
+				const freeDrawCount = ref(10); //一次免费是十连
+				const costDrawGold = ref(300); // 付费额外进行一次十连的花费
+				const tab = ref('activity');
+				const initDrawRate = ref(60);
+				const maxDrawRate = ref(10000);
+				const maxDrawCount = ref(50);
+				const minDrawCount = ref(1);
+				const SRweight = ref(600);
 
-					const safeNum = ref(50); //付费保底次数
-					const doubleSSR = ref(true);
-					const costMode = ref(true);
+				const safeNum = ref(50); //付费保底次数
+				const doubleSSR = ref(true);
+				const costMode = ref(true);
 
-					const averageCost = ref(0);
-					const plagerAverageCost = ref(0);
+				const averageCost = ref(0);
+				const plagerAverageCost = ref(0);
 
-					let simulationResult = [];
-					let displayResult = ref([]);
-					let pieResult = ref([]);
-					let appendResult = ref([]);
+				let simulationResult = [];
+				let displayResult = ref([]);
+				let pieResult = ref([]);
+				let appendResult = ref([]);
 
-					let statDrawRate = ref({ srr: 0, sr: 0, r: 0 });
-					const groupColumns = [
-						{ name: 'SSR', label: 'SSR数量', field: 'SSR', sortable: true, sortOrder: 'da' },
-						{ name: 'SSRHero', label: 'SSR中角色数量', field: 'SSRHero' },
-						{ name: 'SSRCollection', label: 'SSR中收藏品数量', field: 'SSRCollection' },
-						{ name: 'count', label: '玩家数量', field: 'count', sortable: true, sortOrder: 'da' },
-					];
+				let statDrawRate = ref({ srr: 0, sr: 0, r: 0 });
+				const groupColumns = [
+					{ name: 'SSR', label: 'SSR数量', field: 'SSR', sortable: true, sortOrder: 'da' },
+					{ name: 'SSRHero', label: 'SSR中角色数量', field: 'SSRHero' },
+					{ name: 'SSRCollection', label: 'SSR中收藏品数量', field: 'SSRCollection' },
+					{ name: 'count', label: '玩家数量', field: 'count', sortable: true, sortOrder: 'da' },
+				];
 
-					let rateChart;
-					let pieChart;
-					let costChart;
-					let appendChart;
+				let rateChart;
+				let pieChart;
+				let costChart;
+				let appendChart;
 
-					const SSRDrawSetting = reactive([
-						{ min: 1, max: 10, increment: 20 },
-						{ min: 11, max: 20, increment: 100 },
-						{ min: 21, max: 30, increment: 150 },
-						{ min: 31, max: 40, increment: 200 },
-						{ min: 41, max: 50, increment: 500 },
-					]);
-					const drawOptions = [
-						{ label: '活动抽卡（先点模拟计算，然后再点分析结果）', value: 'activity' },
-					];
+				const SSRDrawSetting = reactive([
+					{ min: 1, max: 10, increment: 20 },
+					{ min: 11, max: 20, increment: 100 },
+					{ min: 21, max: 30, increment: 150 },
+					{ min: 31, max: 40, increment: 200 },
+					{ min: 41, max: 50, increment: 500 },
+				]);
+				const drawOptions = [
+					{ label: '活动抽卡（先点模拟计算，然后再点分析结果）', value: 'activity' },
+				];
 
-					const getDrawProb = (drawTimes) => {
-						if (drawTimes === Number(maxDrawCount.value)) {
-							return 1;
-						}
-						let prob = Number(initDrawRate.value);
-						for (const filterIndex in SSRDrawSetting) {
-							const index = Number(filterIndex);
-							if (drawTimes < SSRDrawSetting[index].max) {
-								prob = prob + (drawTimes - SSRDrawSetting[index].min + 1) * SSRDrawSetting[index].increment;
-								return Math.min(prob, maxDrawRate.value) / maxDrawRate.value;
-							} else {
-								prob =
-									prob + (SSRDrawSetting[index].max - SSRDrawSetting[index].min + 1) * SSRDrawSetting[index].increment;
-							}
-						}
-						return Math.min(prob, maxDrawRate.value) / maxDrawRate.value;
-					};
-
-					const drawRateArr = computed(() => {
-						let arr = [];
-						for (let index = minDrawCount.value; index < Number(maxDrawCount.value) + 1; index++) {
-							arr.push(getDrawProb(index));
-						}
-						if (rateChart) {
-							drawRateChart(arr);
-						}
-						return arr;
-					});
-
-					const blankProbArr = computed(() => {
-						let arr = [];
-						for (let index = minDrawCount.value; index < Number(maxDrawCount.value); index++) {
-							if (index === 1) {
-								arr.push((1 - drawRateArr.value[index - 1]) * 1);
-							} else {
-								arr.push((1 - drawRateArr.value[index - 1]) * arr[index - 2]);
-							}
-						}
-						return arr;
-					});
-
-					const SSRAverageProb = computed(() => {
-						let arr = [];
-						for (let index = minDrawCount.value; index < Number(maxDrawCount.value) + 1; index++) {
-							if (index === 1) {
-								arr.push(drawRateArr.value[index - 1] * index);
-							} else {
-								arr.push(drawRateArr.value[index - 1] * blankProbArr.value[index - 2] * index);
-							}
-						}
-						const average = arr.reduce(function (total, value) {
-							return total + value;
-						}, 0);
-						return 1 / average;
-					});
-
-					const calStatDrawRate = () => {
-						const total = simulationResult.length;
-						if (total > 0) {
-							const srr = simulationResult.filter((element) => element.itemLevel === 'SSR').length;
-							const sr = simulationResult.filter((element) => element.itemLevel === 'SR').length;
-							const r = simulationResult.filter((element) => element.itemLevel === 'R').length;
-							statDrawRate.value.ssr = srr / total;
-							statDrawRate.value.sr = sr / total;
-							statDrawRate.value.r = r / total;
-						}
-					};
-
-					const drawItem = (playerIndex, totalDrawCount, drawIndex, drawTimes, isDoubleSSR) => {
-						const randomNum = Math.random();
-						result = {
-							playerIndex: playerIndex,
-							totalDrawCount: totalDrawCount,
-							drawIndex: drawIndex,
-							drawTimes: drawTimes,
-							itemLevel: '',
-							drawItem: '',
-						};
-						if (drawRateArr.value[drawTimes - 1] >= randomNum && (!isDoubleSSR || !doubleSSR.value)) {
-							result.itemLevel = 'SSR';
-							if (Math.random() > 0.5) {
-								result.drawItem = 'Hero';
-							} else {
-								result.drawItem = 'Collection';
-							}
-						} else if (
-							drawTimes % 10 === 0 ||
-							drawRateArr.value[drawTimes - 1] + Number(SRweight.value / maxDrawRate.value) > randomNum
-						) {
-							result.itemLevel = 'SR';
-							if (Math.random() > 0.5) {
-								result.drawItem = 'Hero';
-							} else {
-								result.drawItem = 'Collection';
-							}
+				const getDrawProb = (drawTimes) => {
+					if (drawTimes === Number(maxDrawCount.value)) {
+						return 1;
+					}
+					let prob = Number(initDrawRate.value);
+					for (const filterIndex in SSRDrawSetting) {
+						const index = Number(filterIndex);
+						if (drawTimes < SSRDrawSetting[index].max) {
+							prob = prob + (drawTimes - SSRDrawSetting[index].min + 1) * SSRDrawSetting[index].increment;
+							return Math.min(prob, maxDrawRate.value) / maxDrawRate.value;
 						} else {
-							result.itemLevel = 'R';
-							if (Math.random() > 0.7) {
-								result.drawItem = 'Hero';
-							} else {
-								result.drawItem = 'Collection';
-							}
+							prob =
+								prob + (SSRDrawSetting[index].max - SSRDrawSetting[index].min + 1) * SSRDrawSetting[index].increment;
 						}
-						return result;
-					};
+					}
+					return Math.min(prob, maxDrawRate.value) / maxDrawRate.value;
+				};
 
-					const getArrItemNum = (arr) => {
-						let mapObj = new Map();
-						arr.forEach((element) => {
-							let num = mapObj.get(element);
-							if (num) {
-								num = num + 1;
-								mapObj.set(element, num);
-							} else {
-								mapObj.set(element, 1);
+				const drawRateArr = computed(() => {
+					let arr = [];
+					for (let index = minDrawCount.value; index < Number(maxDrawCount.value) + 1; index++) {
+						arr.push(getDrawProb(index));
+					}
+					if (rateChart) {
+						drawRateChart(arr);
+					}
+					return arr;
+				});
+
+				const blankProbArr = computed(() => {
+					let arr = [];
+					for (let index = minDrawCount.value; index < Number(maxDrawCount.value); index++) {
+						if (index === 1) {
+							arr.push((1 - drawRateArr.value[index - 1]) * 1);
+						} else {
+							arr.push((1 - drawRateArr.value[index - 1]) * arr[index - 2]);
+						}
+					}
+					return arr;
+				});
+
+				const SSRAverageProb = computed(() => {
+					let arr = [];
+					for (let index = minDrawCount.value; index < Number(maxDrawCount.value) + 1; index++) {
+						if (index === 1) {
+							arr.push(drawRateArr.value[index - 1] * index);
+						} else {
+							arr.push(drawRateArr.value[index - 1] * blankProbArr.value[index - 2] * index);
+						}
+					}
+					const average = arr.reduce(function (total, value) {
+						return total + value;
+					}, 0);
+					return 1 / average;
+				});
+
+				const calStatDrawRate = () => {
+					const total = simulationResult.length;
+					if (total > 0) {
+						const srr = simulationResult.filter((element) => element.itemLevel === 'SSR').length;
+						const sr = simulationResult.filter((element) => element.itemLevel === 'SR').length;
+						const r = simulationResult.filter((element) => element.itemLevel === 'R').length;
+						statDrawRate.value.ssr = srr / total;
+						statDrawRate.value.sr = sr / total;
+						statDrawRate.value.r = r / total;
+					}
+				};
+
+				const drawItem = (playerIndex, totalDrawCount, drawIndex, drawTimes, isDoubleSSR) => {
+					const randomNum = Math.random();
+					result = {
+						playerIndex: playerIndex,
+						totalDrawCount: totalDrawCount,
+						drawIndex: drawIndex,
+						drawTimes: drawTimes,
+						itemLevel: '',
+						drawItem: '',
+					};
+					if (drawRateArr.value[drawTimes - 1] >= randomNum && (!isDoubleSSR || !doubleSSR.value)) {
+						result.itemLevel = 'SSR';
+						if (Math.random() > 0.5) {
+							result.drawItem = 'Hero';
+						} else {
+							result.drawItem = 'Collection';
+						}
+					} else if (
+						drawTimes % 10 === 0 ||
+						drawRateArr.value[drawTimes - 1] + Number(SRweight.value / maxDrawRate.value) > randomNum
+					) {
+						result.itemLevel = 'SR';
+						if (Math.random() > 0.5) {
+							result.drawItem = 'Hero';
+						} else {
+							result.drawItem = 'Collection';
+						}
+					} else {
+						result.itemLevel = 'R';
+						if (Math.random() > 0.7) {
+							result.drawItem = 'Hero';
+						} else {
+							result.drawItem = 'Collection';
+						}
+					}
+					return result;
+				};
+
+				const getArrItemNum = (arr) => {
+					let mapObj = new Map();
+					arr.forEach((element) => {
+						let num = mapObj.get(element);
+						if (num) {
+							num = num + 1;
+							mapObj.set(element, num);
+						} else {
+							mapObj.set(element, 1);
+						}
+					});
+					let totalCost = 0;
+					mapObj.forEach((key, val) => {
+						totalCost = totalCost + Number(key) * Number(val);
+					});
+
+					plagerAverageCost.value = totalCost / (playerCount.value - mapObj.get(0));
+					averageCost.value = totalCost / playerCount.value;
+					let arrObj = Array.from(mapObj);
+					arrObj.sort((a, b) => a[0] - b[0]);
+					return new Map(arrObj);
+				};
+
+				const startSimulation = () => {
+					simulationResult = [];
+					playerCostGold.value = [];
+					playerMaxSSR.value = [];
+					for (let playerIndex = 1; playerIndex <= Number(playerCount.value); playerIndex++) {
+						const arrIndex = playerIndex - 1;
+						let drawTimes = 1;
+						let totalDrawCount = 1;
+						playerMaxSSR.value.push(0);
+						playerCostGold.value.push(0);
+						for (let playerDrawIndex = 1; playerDrawIndex <= Number(playerFreeDrawCount.value); playerDrawIndex++) {
+							let isDoubleSSR = false;
+							let SSR = 0;
+							for (let playerDrawTimes = 1; playerDrawTimes <= Number(freeDrawCount.value); playerDrawTimes++) {
+								const tempResult = drawItem(playerIndex, totalDrawCount, playerDrawIndex, drawTimes, isDoubleSSR);
+								if (tempResult.itemLevel === 'SSR') {
+									SSR = SSR + 1;
+									if (SSR === 2) {
+										isDoubleSSR = true;
+									}
+									drawTimes = 1;
+								} else {
+									drawTimes = drawTimes + 1;
+								}
+								simulationResult.push(tempResult);
+								totalDrawCount = totalDrawCount + 1;
 							}
-						});
-						let totalCost = 0;
-						mapObj.forEach((key, val) => {
-							totalCost = totalCost + Number(key) * Number(val);
-						});
+							playerMaxSSR.value[arrIndex] = SSR > playerMaxSSR.value[arrIndex] ? SSR : playerMaxSSR.value[arrIndex];
+						}
 
-						plagerAverageCost.value = totalCost / (playerCount.value - mapObj.get(0));
-						averageCost.value = totalCost / playerCount.value;
-						let arrObj = Array.from(mapObj);
-						arrObj.sort((a, b) => a[0] - b[0]);
-						return new Map(arrObj);
-					};
-
-					const startSimulation = () => {
-						simulationResult = [];
-						playerCostGold.value = [];
-						playerMaxSSR.value = [];
-						for (let playerIndex = 1; playerIndex <= Number(playerCount.value); playerIndex++) {
-							const arrIndex = playerIndex - 1;
-							let drawTimes = 1;
-							let totalDrawCount = 1;
-							playerMaxSSR.value.push(0);
-							playerCostGold.value.push(0);
-							for (let playerDrawIndex = 1; playerDrawIndex <= Number(playerFreeDrawCount.value); playerDrawIndex++) {
+						if (costMode.value && playerMaxSSR.value[arrIndex] < 2) {
+							let costDrawIndex = Number(playerFreeDrawCount.value);
+							let loopCount = 0;
+							while (playerMaxSSR.value[arrIndex] < 2 && loopCount < safeNum.value) {
 								let isDoubleSSR = false;
-								let SSR = 0;
+								let costSSR = 0;
+								costDrawIndex = costDrawIndex + 1;
+								loopCount = loopCount + 1;
+								playerCostGold.value[arrIndex] = playerCostGold.value[arrIndex] + Number(costDrawGold.value);
 								for (let playerDrawTimes = 1; playerDrawTimes <= Number(freeDrawCount.value); playerDrawTimes++) {
-									const tempResult = drawItem(playerIndex, totalDrawCount, playerDrawIndex, drawTimes, isDoubleSSR);
+									const tempResult = drawItem(playerIndex, totalDrawCount, costDrawIndex, drawTimes, isDoubleSSR);
 									if (tempResult.itemLevel === 'SSR') {
-										SSR = SSR + 1;
-										if (SSR === 2) {
+										costSSR = costSSR + 1;
+										if (costSSR === 2) {
 											isDoubleSSR = true;
 										}
 										drawTimes = 1;
@@ -477,406 +410,397 @@
 									simulationResult.push(tempResult);
 									totalDrawCount = totalDrawCount + 1;
 								}
-								playerMaxSSR.value[arrIndex] = SSR > playerMaxSSR.value[arrIndex] ? SSR : playerMaxSSR.value[arrIndex];
+								playerMaxSSR.value[arrIndex] =
+									costSSR > playerMaxSSR.value[arrIndex] ? costSSR : playerMaxSSR.value[arrIndex];
 							}
+						}
+					}
+					calStatDrawRate();
+					drawCostChart();
+				};
+				const activitySimulation = async () => {
+					const tempResult = [];
+					const tempIndexObj = new Map();
+					let tempLength = 0;
+					console.time('tempResult');
 
-							if (costMode.value && playerMaxSSR.value[arrIndex] === 1) {
-								let costDrawIndex = Number(playerFreeDrawCount.value);
-								let loopCount = 0;
-								while (playerMaxSSR.value[arrIndex] < 2 && loopCount < safeNum.value) {
-									let isDoubleSSR = false;
-									let costSSR = 0;
-									costDrawIndex = costDrawIndex + 1;
-									loopCount = loopCount + 1;
-									playerCostGold.value[arrIndex] = playerCostGold.value[arrIndex] + Number(costDrawGold.value);
-									for (let playerDrawTimes = 1; playerDrawTimes <= Number(freeDrawCount.value); playerDrawTimes++) {
-										const tempResult = drawItem(playerIndex, totalDrawCount, costDrawIndex, drawTimes, isDoubleSSR);
-										if (tempResult.itemLevel === 'SSR') {
-											costSSR = costSSR + 1;
-											if (costSSR === 2) {
-												isDoubleSSR = true;
-											}
-											drawTimes = 1;
-										} else {
-											drawTimes = drawTimes + 1;
-										}
-										simulationResult.push(tempResult);
-										totalDrawCount = totalDrawCount + 1;
-									}
-									playerMaxSSR.value[arrIndex] =
-										costSSR > playerMaxSSR.value[arrIndex] ? costSSR : playerMaxSSR.value[arrIndex];
+					simulationResult.forEach((element) => {
+						const tempIndex = tempIndexObj.get(element.playerIndex + '_' + element.drawIndex);
+						if (!tempIndex && tempIndex !== 0) {
+							tempIndexObj.set(element.playerIndex + '_' + element.drawIndex, tempLength);
+							tempResult.push({
+								playerIndex: element.playerIndex,
+								drawIndex: element.drawIndex,
+								SSR: element.itemLevel === 'SSR' ? 1 : 0,
+								SSRHero: element.itemLevel === 'SSR' && element.drawItem === 'Hero' ? 1 : 0,
+								SSRCollection: element.itemLevel === 'SSR' && element.drawItem === 'Collection' ? 1 : 0,
+							});
+							tempLength = tempLength + 1;
+						} else {
+							if (element.itemLevel === 'SSR') {
+								tempResult[tempIndex].SSR = tempResult[tempIndex].SSR + 1;
+								if (element.drawItem === 'Hero') {
+									tempResult[tempIndex].SSRHero = tempResult[tempIndex].SSRHero + 1;
+								}
+								if (element.drawItem === 'Collection') {
+									tempResult[tempIndex].SSRCollection = tempResult[tempIndex].SSRCollection + 1;
 								}
 							}
 						}
-						calStatDrawRate();
-						drawCostChart();
-					};
-					const activitySimulation = async () => {
-						const tempResult = [];
-						const tempIndexObj = new Map();
-						let tempLength = 0;
-						console.time('tempResult');
+					});
 
-						simulationResult.forEach((element) => {
-							const tempIndex = tempIndexObj.get(element.playerIndex + '_' + element.drawIndex);
-							if (!tempIndex && tempIndex !== 0) {
-								tempIndexObj.set(element.playerIndex + '_' + element.drawIndex, tempLength);
-								tempResult.push({
-									playerIndex: element.playerIndex,
-									drawIndex: element.drawIndex,
-									SSR: element.itemLevel === 'SSR' ? 1 : 0,
-									SSRHero: element.itemLevel === 'SSR' && element.drawItem === 'Hero' ? 1 : 0,
-									SSRCollection: element.itemLevel === 'SSR' && element.drawItem === 'Collection' ? 1 : 0,
-								});
-								tempLength = tempLength + 1;
+					console.timeEnd('tempResult');
+					console.time('appendResult');
+					appendResult.value = new Map();
+					const filterResult = tempResult.filter((element) => element.SSR > 0 && element.drawIndex <= 10);
+					filterResult.forEach((element) => {
+						const appendIndex = appendResult.value.get(element.SSR);
+						if (!appendIndex && appendIndex !== 0) {
+							appendResult.value.set(element.SSR, new Map());
+							const ssrIndex = appendResult.value.get(element.SSR).get(element.drawIndex);
+							if (!ssrIndex && ssrIndex !== 0) {
+								appendResult.value.get(element.SSR).set(element.drawIndex, 1);
 							} else {
-								if (element.itemLevel === 'SSR') {
-									tempResult[tempIndex].SSR = tempResult[tempIndex].SSR + 1;
-									if (element.drawItem === 'Hero') {
-										tempResult[tempIndex].SSRHero = tempResult[tempIndex].SSRHero + 1;
-									}
-									if (element.drawItem === 'Collection') {
-										tempResult[tempIndex].SSRCollection = tempResult[tempIndex].SSRCollection + 1;
-									}
-								}
+								let num = appendResult.value.get(element.SSR).get(element.drawIndex);
+								num = num + 1;
+								appendResult.value.get(element.SSR).set(element.drawIndex, num);
 							}
-						});
-
-						console.timeEnd('tempResult');
-						console.time('appendResult');
-						appendResult.value = new Map();
-						const filterResult = tempResult.filter((element) => element.SSR > 0 && element.drawIndex <= 10);
-						filterResult.forEach((element) => {
-							const appendIndex = appendResult.value.get(element.SSR);
-							if (!appendIndex && appendIndex !== 0) {
-								appendResult.value.set(element.SSR, new Map());
-								const ssrIndex = appendResult.value.get(element.SSR).get(element.drawIndex);
-								if (!ssrIndex && ssrIndex !== 0) {
-									appendResult.value.get(element.SSR).set(element.drawIndex, 1);
-								} else {
-									let num = appendResult.value.get(element.SSR).get(element.drawIndex);
-									num = num + 1;
-									appendResult.value.get(element.SSR).set(element.drawIndex, num);
-								}
+						} else {
+							const ssrIndex = appendResult.value.get(element.SSR).get(element.drawIndex);
+							if (!ssrIndex && ssrIndex !== 0) {
+								appendResult.value.get(element.SSR).set(element.drawIndex, 1);
 							} else {
-								const ssrIndex = appendResult.value.get(element.SSR).get(element.drawIndex);
-								if (!ssrIndex && ssrIndex !== 0) {
-									appendResult.value.get(element.SSR).set(element.drawIndex, 1);
-								} else {
-									let num = appendResult.value.get(element.SSR).get(element.drawIndex);
-									num = num + 1;
-									appendResult.value.get(element.SSR).set(element.drawIndex, num);
-								}
+								let num = appendResult.value.get(element.SSR).get(element.drawIndex);
+								num = num + 1;
+								appendResult.value.get(element.SSR).set(element.drawIndex, num);
 							}
-						});
+						}
+					});
 
-						console.timeEnd('appendResult');
-						console.time('statResult');
+					console.timeEnd('appendResult');
+					console.time('statResult');
 
-						const statResult = [];
-						const statIndexObj = new Map();
-						let statLength = 0;
-						tempResult.forEach((element) => {
-							const statIndex = statIndexObj.get(element.playerIndex + '');
-							if (!statIndex && statIndex !== 0) {
-								statIndexObj.set(element.playerIndex + '', statLength);
-								statResult.push({
-									playerIndex: element.playerIndex,
-									SSR: element.SSR,
-									SSRHero: element.SSRHero,
-									SSRCollection: element.SSRCollection,
-								});
-								statLength = statLength + 1;
-							} else {
-								if (element.SSR > statResult[statIndex].SSR) {
-									statResult[statIndex].SSR = element.SSR;
-									statResult[statIndex].SSRHero = element.SSRHero;
-									statResult[statIndex].SSRCollection = element.SSRCollection;
-								} else if (
-									element.SSR === statResult[statIndex].SSR &&
-									element.SSRHero > statResult[statIndex].SSRHero
-								) {
-									statResult[statIndex].SSR = element.SSR;
-									statResult[statIndex].SSRHero = element.SSRHero;
-									statResult[statIndex].SSRCollection = element.SSRCollection;
-								}
+					const statResult = [];
+					const statIndexObj = new Map();
+					let statLength = 0;
+					tempResult.forEach((element) => {
+						const statIndex = statIndexObj.get(element.playerIndex + '');
+						if (!statIndex && statIndex !== 0) {
+							statIndexObj.set(element.playerIndex + '', statLength);
+							statResult.push({
+								playerIndex: element.playerIndex,
+								SSR: element.SSR,
+								SSRHero: element.SSRHero,
+								SSRCollection: element.SSRCollection,
+							});
+							statLength = statLength + 1;
+						} else {
+							if (element.SSR > statResult[statIndex].SSR) {
+								statResult[statIndex].SSR = element.SSR;
+								statResult[statIndex].SSRHero = element.SSRHero;
+								statResult[statIndex].SSRCollection = element.SSRCollection;
+							} else if (
+								element.SSR === statResult[statIndex].SSR &&
+								element.SSRHero > statResult[statIndex].SSRHero
+							) {
+								statResult[statIndex].SSR = element.SSR;
+								statResult[statIndex].SSRHero = element.SSRHero;
+								statResult[statIndex].SSRCollection = element.SSRCollection;
 							}
-						});
+						}
+					});
 
-						console.timeEnd('statResult');
-						console.time('groupResult');
-						const groupResult = [];
-						const groupIndexObj = new Map();
-						let groupLength = 0;
-						statResult.forEach((element) => {
-							const groupIndex = groupIndexObj.get(element.SSR + '_' + element.SSRHero + '_' + element.SSRCollection);
-							if (!groupIndex && groupIndex !== 0) {
-								groupIndexObj.set(element.SSR + '_' + element.SSRHero + '_' + element.SSRCollection, groupLength);
-								groupResult.push({
-									SSR: element.SSR,
-									SSRHero: element.SSRHero,
-									SSRCollection: element.SSRCollection,
-									count: 1,
-								});
-								groupLength = groupLength + 1;
-							} else {
-								groupResult[groupIndex].count = groupResult[groupIndex].count + 1;
-							}
-						});
-						displayResult.value = groupResult.map((element) => {
-							const newValue = element;
-							newValue.count = newValue.count / playerCount.value;
-							return newValue;
-						});
+					console.timeEnd('statResult');
+					console.time('groupResult');
+					const groupResult = [];
+					const groupIndexObj = new Map();
+					let groupLength = 0;
+					statResult.forEach((element) => {
+						const groupIndex = groupIndexObj.get(element.SSR + '_' + element.SSRHero + '_' + element.SSRCollection);
+						if (!groupIndex && groupIndex !== 0) {
+							groupIndexObj.set(element.SSR + '_' + element.SSRHero + '_' + element.SSRCollection, groupLength);
+							groupResult.push({
+								SSR: element.SSR,
+								SSRHero: element.SSRHero,
+								SSRCollection: element.SSRCollection,
+								count: 1,
+							});
+							groupLength = groupLength + 1;
+						} else {
+							groupResult[groupIndex].count = groupResult[groupIndex].count + 1;
+						}
+					});
+					displayResult.value = groupResult.map((element) => {
+						const newValue = element;
+						newValue.count = newValue.count / playerCount.value;
+						return newValue;
+					});
 
-						console.timeEnd('groupResult');
+					console.timeEnd('groupResult');
 
-						pieResult.value = [];
-						groupResult.forEach((element) => {
-							const pieIndex = pieResult.value.findIndex((value) => value.name === 'SSR数量:' + element.SSR);
-							if (pieIndex === -1) {
-								pieResult.value.push({
-									name: 'SSR数量:' + element.SSR,
-									children: [
-										{
-											name: '英雄:' + element.SSRHero + '_收藏品:' + element.SSRCollection,
-											value: element.count,
-										},
-									],
-								});
-							} else {
-								pieResult.value[pieIndex].children.push({
-									name: '英雄:' + element.SSRHero + '_收藏品:' + element.SSRCollection,
-									value: element.count,
-								});
-							}
-						});
+					pieResult.value = [];
+					groupResult.forEach((element) => {
+						const pieIndex = pieResult.value.findIndex((value) => value.name === 'SSR数量:' + element.SSR);
+						if (pieIndex === -1) {
+							pieResult.value.push({
+								name: 'SSR数量:' + element.SSR,
+								children: [
+									{
+										name: '英雄:' + element.SSRHero + '_收藏品:' + element.SSRCollection,
+										value: element.count,
+									},
+								],
+							});
+						} else {
+							pieResult.value[pieIndex].children.push({
+								name: '英雄:' + element.SSRHero + '_收藏品:' + element.SSRCollection,
+								value: element.count,
+							});
+						}
+					});
 
-						return groupResult;
-					};
+					return groupResult;
+				};
 
-					const deleteSetting = (index) => {
-						SSRDrawSetting.splice(index, 1);
-					};
+				const deleteSetting = (index) => {
+					SSRDrawSetting.splice(index, 1);
+				};
 
-					const addSetting = (index) => {
-						const length = SSRDrawSetting.length;
-						SSRDrawSetting[length - 1].max = Number(maxDrawCount.value) - 1;
-						SSRDrawSetting.push({ min: Number(maxDrawCount.value), max: Number(maxDrawCount.value), increment: 0 });
+				const addSetting = (index) => {
+					const length = SSRDrawSetting.length;
+					SSRDrawSetting[length - 1].max = Number(maxDrawCount.value) - 1;
+					SSRDrawSetting.push({ min: Number(maxDrawCount.value), max: Number(maxDrawCount.value), increment: 0 });
+				};
+
+				const drawRateChart = (result) => {
+					let option = {
+						tooltip: {
+							show: true,
+							trigger: 'item',
+						},
+						xAxis: {
+							type: 'category',
+							data: [...Array(result.length)].map((a, index) => index + 1),
+							name: "抽取次数",
+							nameLocation: "middle",
+							nameGap: 30
+						},
+						yAxis: {
+							type: 'value',
+							name: "ssr随机概率",
+							nameLocation: "middle",
+							nameGap: 30
+						},
+						series: [
+							{
+								data: result,
+								type: 'line',
+							},
+						],
 					};
 
-					const drawRateChart = (result) => {
-						let option = {
+					option && rateChart.setOption(option);
+				};
+
+				const drawpieChart = async () => {
+					activitySimulation().then((result) => {
+						option = {
 							tooltip: {
-								show: true,
 								trigger: 'item',
 							},
-							xAxis: {
-								type: 'category',
-								data: [...Array(result.length)].map((a, index) => index + 1),
+							legend: {
+								orient: 'vertical',
+								left: 'left',
 							},
-							yAxis: {
-								type: 'value',
+							dataset: {
+								source: result,
 							},
-							series: [
-								{
-									data: result,
-									type: 'line',
+							series: {
+								type: 'sunburst',
+								// emphasis: {
+								//     focus: 'ancestor'
+								// },
+								data: pieResult.value,
+								radius: [0, '90%'],
+								label: {
+									rotate: 'radial',
 								},
-							],
+							},
 						};
 
-						option && rateChart.setOption(option);
-					};
+						option && pieChart.setOption(option);
+					});
+					drawAppendChart();
+				};
 
-					const drawpieChart = async () => {
-						activitySimulation().then((result) => {
-							option = {
-								tooltip: {
-									trigger: 'item',
-								},
-								legend: {
-									orient: 'vertical',
-									left: 'left',
-								},
-								dataset: {
-									source: result,
-								},
-								series: {
-									type: 'sunburst',
-									// emphasis: {
-									//     focus: 'ancestor'
-									// },
-									data: pieResult.value,
-									radius: [0, '90%'],
-									label: {
-										rotate: 'radial',
-									},
-								},
-							};
-
-							option && pieChart.setOption(option);
-						});
-						drawAppendChart();
-					};
-
-					const drawCostChart = () => {
-						const mapData = getArrItemNum(playerCostGold.value);
-						let option = {
-							dataZoom: [
-								{
-									type: 'inside',
-								},
-								{
-									type: 'slider',
-								},
-							],
-							title: {
-								show: true,
-								text: '玩家为了一次十连出2个SSR的花钻情况',
+				const drawCostChart = () => {
+					const mapData = getArrItemNum(playerCostGold.value);
+					let option = {
+						tooltip: {
+							trigger: 'item',
+						},
+						dataZoom: [
+							{
+								type: 'inside',
 							},
-							xAxis: {
-								type: 'category',
-								data: [...mapData.keys()],
+							{
+								type: 'slider',
+								bottom:5
 							},
-							yAxis: {
-								type: 'value',
-							},
-							series: [
-								{
-									data: [...mapData.values()],
-									type: 'bar',
-									label: {
-										show: true,
-										position: 'top',
-									},
-								},
-							],
-						};
-
-						option && costChart.setOption(option);
-					};
-
-					const drawAppendChart = () => {
-						appendResult.value;
-						let seriesArr = [];
-						appendResult.value.forEach((value, key) => {
-							seriesArr.push({
-								name: `十连出${key}个SSR`,
+						],
+						title: {
+							show: true,
+							text: '玩家为了一次十连出2个SSR的花钻情况',
+						},
+						xAxis: {
+							type: 'category',
+							data: [...mapData.keys()],
+							name: "额外花钻数量",
+							nameLocation: "middle",
+							nameGap: 20
+						},
+						yAxis: {
+							type: 'value',
+							name: "玩家数量",
+							nameLocation: "middle",
+							nameGap: 40
+						},
+						series: [
+							{
+								data: [...mapData.values()],
 								type: 'bar',
-								stack: 'total',
 								label: {
 									show: true,
+									position: 'top',
 								},
-								data: Array.from(value).map((value) => [value[0] - 1, value[1]]),
-							});
-						});
+							},
+						],
+					};
 
-						let option = {
-							legend: {
+					option && costChart.setOption(option);
+				};
+
+				const drawAppendChart = () => {
+					appendResult.value;
+					let seriesArr = [];
+					appendResult.value.forEach((value, key) => {
+						seriesArr.push({
+							name: `十连出${key}个SSR`,
+							type: 'bar',
+							stack: 'total',
+							label: {
 								show: true,
 							},
-							xAxis: {
-								type: 'category',
-								data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-							},
-							yAxis: {
-								type: 'value',
-							},
-							series: seriesArr,
-						};
-
-						option && appendChart.setOption(option);
-					};
-
-					/**
-					 * 导出 json 数据为 Excle 表格
-					 * @param {json} data 要导出的 json 数据
-					 * @param {String} head 表头, 可选 参数示例：'名字,邮箱,电话'
-					 * @param {*} name 导出的文件名, 可选
-					 */
-					const jsonToExcel = (data, head, name = 'data') => {
-						let str = head ? head + '\n' : '';
-						simulationResult.forEach((item) => {
-							// 拼接json数据, 增加 \t 为了不让表格显示科学计数法或者其他格式
-							for (let key in item) {
-								str = `${str + item[key] + '\t'},`;
-							}
-							str += '\n';
+							data: Array.from(value).map((value) => [value[0] - 1, value[1]]),
 						});
-						// encodeURIComponent解决中文乱码
-						const uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
-						// 通过创建a标签实现
-						const link = document.createElement('a');
-						link.href = uri;
-						// 对下载的文件命名
-						link.download = `${name + '.csv'}`;
-						link.click();
+					});
+
+					let option = {
+						legend: {
+							show: true,
+						},
+						xAxis: {
+							type: 'category',
+							data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+						},
+						yAxis: {
+							type: 'value',
+						},
+						series: seriesArr,
 					};
 
-					onMounted(() => {
-						rateChart = echarts.init(document.getElementById('rate'));
-						pieChart = echarts.init(document.getElementById('pie'));
-						costChart = echarts.init(document.getElementById('cost'));
-						appendChart = echarts.init(document.getElementById('append'));
-						drawRateChart(drawRateArr.value);
+					option && appendChart.setOption(option);
+				};
+
+				/**
+				 * 导出 json 数据为 Excle 表格
+				 * @param {json} data 要导出的 json 数据
+				 * @param {String} head 表头, 可选 参数示例：'名字,邮箱,电话'
+				 * @param {*} name 导出的文件名, 可选
+				 */
+				const jsonToExcel = (data, head, name = 'data') => {
+					let str = head ? head + '\n' : '';
+					simulationResult.forEach((item) => {
+						// 拼接json数据, 增加 \t 为了不让表格显示科学计数法或者其他格式
+						for (let key in item) {
+							str = `${str + item[key] + '\t'},`;
+						}
+						str += '\n';
 					});
-					watch(
-						[minDrawCount, maxDrawCount, SSRDrawSetting],
-						([minDrawCount, maxDrawCount, SSRDrawSetting], [preMinDrawCount, preMaxDrawCount, preSSRDrawSetting]) => {
-							for (filterIndex in SSRDrawSetting) {
-								const index = Number(filterIndex);
-								if (index === 0) {
-									SSRDrawSetting[index].min = Number(minDrawCount);
-								}
-								if (index === SSRDrawSetting.length - 1) {
-									SSRDrawSetting[index].max = Number(maxDrawCount);
-								}
+					// encodeURIComponent解决中文乱码
+					const uri = 'data:text/csv;charset=utf-8,\ufeff' + encodeURIComponent(str);
+					// 通过创建a标签实现
+					const link = document.createElement('a');
+					link.href = uri;
+					// 对下载的文件命名
+					link.download = `${name + '.csv'}`;
+					link.click();
+				};
+
+				onMounted(() => {
+					rateChart = echarts.init(document.getElementById('rate'));
+					pieChart = echarts.init(document.getElementById('pie'));
+					costChart = echarts.init(document.getElementById('cost'));
+					appendChart = echarts.init(document.getElementById('append'));
+					drawRateChart(drawRateArr.value);
+				});
+				watch(
+					[minDrawCount, maxDrawCount, SSRDrawSetting],
+					([minDrawCount, maxDrawCount, SSRDrawSetting], [preMinDrawCount, preMaxDrawCount, preSSRDrawSetting]) => {
+						for (filterIndex in SSRDrawSetting) {
+							const index = Number(filterIndex);
+							if (index === 0) {
+								SSRDrawSetting[index].min = Number(minDrawCount);
+							}
+							if (index === SSRDrawSetting.length - 1) {
+								SSRDrawSetting[index].max = Number(maxDrawCount);
 							}
 						}
-					);
-					return {
-						tab,
-						drawOptions,
-						SSRDrawSetting,
-						maxDrawCount,
-						maxDrawRate,
-						drawRateArr,
-						blankProbArr,
-						SSRAverageProb,
-						deleteSetting,
-						initDrawRate,
-						playerCount,
-						playerFreeDrawCount,
-						freeDrawCount,
-						drawpieChart,
-						groupColumns,
-						displayResult,
-						statDrawRate,
-						startSimulation,
-						SRweight,
-						doubleSSR,
-						addSetting,
-						costDrawGold,
-						costMode,
-						safeNum,
-						jsonToExcel,
-						averageCost,
-						plagerAverageCost,
-					};
-				},
-			};
+					}
+				);
+				return {
+					tab,
+					drawOptions,
+					SSRDrawSetting,
+					maxDrawCount,
+					maxDrawRate,
+					drawRateArr,
+					blankProbArr,
+					SSRAverageProb,
+					deleteSetting,
+					initDrawRate,
+					playerCount,
+					playerFreeDrawCount,
+					freeDrawCount,
+					drawpieChart,
+					groupColumns,
+					displayResult,
+					statDrawRate,
+					startSimulation,
+					SRweight,
+					doubleSSR,
+					addSetting,
+					costDrawGold,
+					costMode,
+					safeNum,
+					jsonToExcel,
+					averageCost,
+					plagerAverageCost,
+				};
+			},
+		};
 
-			const app = createApp(vue3Composition)
-				.use(Quasar, {
-					config: {
-						notify: {
-							/* look at QuasarConfOptions from the API card */
-						},
-						loading: {},
+		const app = createApp(vue3Composition)
+			.use(Quasar, {
+				config: {
+					notify: {
+						/* look at QuasarConfOptions from the API card */
 					},
-				})
-				.mount('#app');
-		</script>
-	</body>
+					loading: {},
+				},
+			})
+			.mount('#app');
+	</script>
+</body>
+
 </html>
