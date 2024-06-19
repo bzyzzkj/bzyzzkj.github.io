@@ -387,7 +387,7 @@
 							playerMaxSSR.value[arrIndex] = SSR > playerMaxSSR.value[arrIndex] ? SSR : playerMaxSSR.value[arrIndex];
 						}
 
-						if (costMode.value && playerMaxSSR.value[arrIndex] < 2) {
+						if (costMode.value && playerMaxSSR.value[arrIndex] < 1) {
 							let costDrawIndex = Number(playerFreeDrawCount.value);
 							let loopCount = 0;
 							while (playerMaxSSR.value[arrIndex] < 2 && loopCount < safeNum.value) {
